@@ -1,0 +1,61 @@
+.hyper_main::before {
+  content: "";
+    display: block;
+    position: absolute;
+    left: 0;
+    right: 0;
+    height: 3px;
+    bottom: 0;
+}
+
+.header_appTitle {
+  color: transparent;
+}
+
+aside .battery-level time {
+  display: block;
+  opacity: 0.5;
+}
+
+.battery-level {
+  padding: 1em;
+  font-family: 'Helvetica Neue', 'Open Sans', 'Arial', sans-serif;
+  letter-spacing: -0.04em;
+  font: 500 16px/1em Gotham, Montserrat, Raleway, Questrial, "Novecento Sans Wide", Arial;
+}
+
+.battery-level {
+  position:     fixed;
+  bottom:       var(--height);
+  left:         0;
+}
+
+progress.battery-bar {
+  background: linear-gradient(110deg, #1c5ab6, #e82967, #3e3b45);
+  position:   fixed;
+  height:     var(--height);
+  width:      auto;
+  bottom:     0;
+  right:      0;
+  left:       0;
+}
+
+progress::-webkit-progress-bar {
+  /* background-color: #4a464f */
+  background-color: transparent }
+
+progress::-webkit-progress-value {
+  mix-blend-mode: screen;
+  opacity:        0.5 }
+
+progress.full::-webkit-progress-value {
+  background-color: #24d694 }
+
+progress.charged::-webkit-progress-value {
+  background-color: #1c5ab6 }
+
+progress.low-power::-webkit-progress-value {
+  background-color: #c44397 }
+
+progress.critical::-webkit-progress-value {
+  background-color: #e82967 }
