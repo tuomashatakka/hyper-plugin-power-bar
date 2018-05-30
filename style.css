@@ -1,61 +1,52 @@
-.hyper_main::before {
-  content: "";
-    display: block;
-    position: absolute;
-    left: 0;
-    right: 0;
-    height: 3px;
-    bottom: 0;
-}
-
-.header_appTitle {
-  color: transparent;
-}
 
 aside .battery-level time {
   display: block;
-  opacity: 0.5;
-}
+  opacity: 0.5 }
 
 .battery-level {
-  padding: 1em;
-  font-family: 'Helvetica Neue', 'Open Sans', 'Arial', sans-serif;
-  letter-spacing: -0.04em;
-  font: 500 16px/1em Gotham, Montserrat, Raleway, Questrial, "Novecento Sans Wide", Arial;
-}
+  letter-spacing: 0.04em;
+  line-height:    2em;
+  font-weight:    500;
+  font-family:    'Helvetica Neue', 'Roboto', 'Open Sans', 'Montserrat', 'Questrial', 'Arial', sans-serif;
+  font-size:      12px;
+  padding:        1em }
 
 .battery-level {
   position:     fixed;
   bottom:       var(--height);
-  left:         0;
-}
+  left:         0 }
 
-progress.battery-bar {
+.progress.battery-bar {
   background: linear-gradient(110deg, #1c5ab6, #e82967, #3e3b45);
+  transition: 5s all;
   position:   fixed;
   height:     var(--height);
-  width:      auto;
   bottom:     0;
+  width:      auto;
   right:      0;
-  left:       0;
-}
+  left:       0 }
 
-progress::-webkit-progress-bar {
-  /* background-color: #4a464f */
-  background-color: transparent }
+.progress div {
+  background-color: transparent;
+  transition:       5s all;
+  position:         absolute;
+  bottom:           0;
+  width:            var(--value);
+  left:             0;
+  top:              0 }
 
-progress::-webkit-progress-value {
+.progress div {
   mix-blend-mode: screen;
-  opacity:        0.5 }
+  opacity:        0.85 }
 
-progress.full::-webkit-progress-value {
+.progress..full div {
   background-color: #24d694 }
 
-progress.charged::-webkit-progress-value {
+.progress.charged div {
   background-color: #1c5ab6 }
 
-progress.low-power::-webkit-progress-value {
+.progress.low-power div {
   background-color: #c44397 }
 
-progress.critical::-webkit-progress-value {
+.progress.critical div {
   background-color: #e82967 }
