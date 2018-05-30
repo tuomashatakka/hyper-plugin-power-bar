@@ -1,16 +1,17 @@
-.hyper_main::before {
-  content: "";
-    display: block;
-    position: absolute;
-    left: 0;
-    right: 0;
-    height: 3px;
-    bottom: 0;
+:root {
+  --height:         4px;
+  --start-color:    #1c5ab6;
+  --middle-color:   #e82967;
+  --end-color:      #3e3b45;
+  --state-full:     #24d694;
+  --state-charged:  #1c5ab6;
+  --state-low:      #c44397;
+  --state-critical: #e82967;
 }
 
-.header_appTitle {
+/* .header_appTitle {
   color: transparent;
-}
+} */
 
 aside .battery-level time {
   display: block;
@@ -18,30 +19,32 @@ aside .battery-level time {
 }
 
 .battery-level {
-  padding: 1em;
-  font-family: 'Helvetica Neue', 'Open Sans', 'Arial', sans-serif;
   letter-spacing: -0.04em;
-  font: 500 16px/1em Gotham, Montserrat, Raleway, Questrial, "Novecento Sans Wide", Arial;
+  padding:        1em;
+  font:           500 16px/1em Gotham, Montserrat, Raleway, Questrial, "Novecento Sans Wide", Arial;
 }
 
 .battery-level {
-  position:     fixed;
-  bottom:       var(--height);
-  left:         0;
+  position: fixed;
+  bottom:   var(--height);
+  left:     0;
 }
 
 progress.battery-bar {
-  background: linear-gradient(110deg, #1c5ab6, #e82967, #3e3b45);
   position:   fixed;
-  height:     var(--height);
-  width:      auto;
   bottom:     0;
-  right:      0;
   left:       0;
+  right:      0;
+  width:      auto;
+  height:     var(--height);
+  background: linear-gradient(
+    130deg,
+    var(--start-color),
+    var(--middle-color),
+    var(--end-color))
 }
 
 progress::-webkit-progress-bar {
-  /* background-color: #4a464f */
   background-color: transparent }
 
 progress::-webkit-progress-value {
@@ -49,13 +52,13 @@ progress::-webkit-progress-value {
   opacity:        0.5 }
 
 progress.full::-webkit-progress-value {
-  background-color: #24d694 }
+  background-color: var(--state-full) }
 
 progress.charged::-webkit-progress-value {
-  background-color: #1c5ab6 }
+  background-color: var(--state-charged) }
 
 progress.low-power::-webkit-progress-value {
-  background-color: #c44397 }
+  background-color: var(--state-low) }
 
 progress.critical::-webkit-progress-value {
-  background-color: #e82967 }
+  background-color: var(--state-critical) }

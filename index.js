@@ -1,6 +1,11 @@
 const { resolve } = require('path')
 const { readFileSync } = require('fs')
 
+
+let container
+let progress
+let label
+
 const suffix    = [ 'seconds', 'minutes', 'hours', 'days', 'weeks', '', '', '' ]
 const factor    = [ 60, 60, 24, 7, 1, 1, 1 ]
 const states    = {
@@ -10,21 +15,22 @@ const states    = {
   0:  'critical',
 }
 
-const container = document.createElement('aside')
-const progress  = document.createElement('progress')
-const label     = document.createElement('label')
-container.appendChild(label)
-container.appendChild(progress)
+let vars = {
+  height: '2px'
+}
+
 
 async function getBatteryLevel () {
   let { level } = await navigator.getBattery()
   return 100 * level
 }
 
+
 async function getBatteryChargingLabel () {
   let { charging } = await navigator.getBattery()
   return charging ? ' until full' : ' until empty'
 }
+
 
 async function getBatteryTime () {
   let { charging, chargingTime, dischargingTime } = await navigator.getBattery()
@@ -37,6 +43,7 @@ async function getBatteryTime () {
   return time.toFixed(1) + ' ' + suffix[n]
 }
 
+
 async function onBatteryChange (callback) {
   let battery = await navigator.getBattery()
   battery.addEventListener('dischargingtimechange', callback)
@@ -47,15 +54,17 @@ async function onBatteryChange (callback) {
   }
 }
 
+
 async function drawBatteryLevel (e) {
+
   if (e)
     console.info("Battery change event", e)
 
   let state
-  let level           = await getBatteryLevel()
-  let time            = getBatteryTime()
-  let timeLabel       = getBatteryChargingLabel()
-  let timeContent     = '<time>' + await time + await timeLabel + '</time>'
+  let level       = await getBatteryLevel()
+  let time        = getBatteryTime()
+  let timeLabel   = getBatteryChargingLabel()
+  let timeContent = '<time>' + await time + await timeLabel + '</time>'
 
   for (let lvl in states) {
     if (parseInt(level) >= lvl)
@@ -71,10 +80,12 @@ async function drawBatteryLevel (e) {
   document.body.appendChild(container)
 }
 
+
 function applyCSS (filename, variables={}) {
-  const css = document.createElement('style')
+  const css       = document.createElement('style')
   const outputVar = name => '--' + name + ': ' + variables[name] + ';\n'
-  let vars = Object.keys(variables).reduce((stream, name) => stream + outputVar(name), '')
+  let vars        = Object.keys(variables).reduce((stream, name) => stream + outputVar(name), '')
+
   container.querySelector('style[name="' + filename + '"]')
   css.setAttribute('name', filename)
   css.innerHTML = readFileSync(resolve(__dirname, filename), 'utf8') + `
@@ -82,10 +93,21 @@ function applyCSS (filename, variables={}) {
     :root {${vars}}`
   container.appendChild(css)
 }
-let vars = {
-  height: '4px'
+
+
+function decorateHyper (host) {
+  container = document.createElement('aside')
+  progress  = document.createElement('progress')
+  label     = document.createElement('label')
+  container.appendChild(label)
+  container.appendChild(progress)
+  drawBatteryLevel()
+  applyCSS('style.css', vars)
+  onBatteryChange(drawBatteryLevel)
+  return host
 }
 
-drawBatteryLevel()
-applyCSS('style.css', vars)
-onBatteryChange(drawBatteryLevel)
+
+module.exports = {
+  decorateHyper
+}
