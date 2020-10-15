@@ -1,5 +1,5 @@
 :root {
-  --height:         4px;
+  --height:         3px;
   --start-color:    #1c5ab6;
   --middle-color:   #e82967;
   --end-color:      #3e3b45;
@@ -9,25 +9,43 @@
   --state-critical: #e82967;
 }
 
-/* .header_appTitle {
-  color: transparent;
-} */
-
-aside .battery-level time {
-  display: block;
-  opacity: 0.5;
+aside.power-bar-container {
+  opacity: 1;
+  transition: 500ms opacity;
+  -webkit-transition: 500ms opacity;
+  -moz-transition: 500ms opacity;
+  -ms-transition: 500ms opacity;
+  -o-transition: 500ms opacity;
 }
 
-.battery-level {
+aside.power-bar-container.hidden {
+  opacity: 0;
+}
+
+aside.power-bar-container:hover .battery-level,
+aside.power-bar-container .battery-level.updated {
+  transition-duration: 120ms;
+  transition-delay:    0;
+  opacity: 1;
+}
+
+aside.power-bar-container .battery-level {
+  opacity: 0;
+  transition-duration: 10900ms;
+  transition-property: opacity;
+  left:           0;
+  bottom:         var(--height);
+  padding:        0.2em;
+  position:       fixed;
+  font-family:    Gotham, Montserrat, Raleway, Questrial, "Novecento Sans Wide", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, "Fira Sans", "Droid Sans", "Helvetica Neue", sans-serif;
   letter-spacing: -0.04em;
-  padding:        1em;
-  font:           500 16px/1em Gotham, Montserrat, Raleway, Questrial, "Novecento Sans Wide", Arial;
+  font-size:      10px;
 }
 
-.battery-level {
-  position: fixed;
-  bottom:   var(--height);
-  left:     0;
+aside.power-bar-container .battery-level time {
+  display: inline-block;
+  opacity: 0.2;
+  margin-left: 0.3em;
 }
 
 progress.battery-bar {
@@ -37,19 +55,20 @@ progress.battery-bar {
   right:      0;
   width:      auto;
   height:     var(--height);
+  appearance: none;
   background: linear-gradient(
     130deg,
     var(--start-color),
     var(--middle-color),
-    var(--end-color))
+    var(--end-color)) !important;
 }
 
 progress::-webkit-progress-bar {
-  background-color: transparent }
+  background-color: transparent !important; }
 
 progress::-webkit-progress-value {
   mix-blend-mode: screen;
-  opacity:        0.5 }
+  opacity:        1 }
 
 progress.full::-webkit-progress-value {
   background-color: var(--state-full) }

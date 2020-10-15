@@ -2,9 +2,11 @@ const { resolve } = require('path')
 const { readFileSync } = require('fs')
 
 
-let container
-let progress
-let label
+const elements = {
+  container:  null,
+  progress:   null,
+  label:      null,
+}
 
 const suffix    = [ 'seconds', 'minutes', 'hours', 'days', 'weeks', '', '', '' ]
 const factor    = [ 60, 60, 24, 7, 1, 1, 1 ]
@@ -21,33 +23,32 @@ let vars = {
 
 
 async function getBatteryLevel () {
-  let { level } = await navigator.getBattery()
+  const { level } = await navigator.getBattery()
   return 100 * level
 }
 
 
 async function getBatteryChargingLabel () {
-  let { charging } = await navigator.getBattery()
+  const { charging } = await navigator.getBattery()
   return charging ? ' until full' : ' until empty'
 }
 
 
 async function getBatteryTime () {
-  let { charging, chargingTime, dischargingTime } = await navigator.getBattery()
+  const { charging, chargingTime, dischargingTime } = await navigator.getBattery()
   let time = (charging ? chargingTime : dischargingTime)
   let n = 0
-  while (time > factor[n]) {
-    time = time / factor[n]
-    n++
-  }
+  while (time > factor[n])
+    time = time / factor[n++]
   return time.toFixed(1) + ' ' + suffix[n]
 }
 
 
-async function onBatteryChange (callback) {
-  let battery = await navigator.getBattery()
+async function observeBatteryChange (callback) {
+  const battery = await navigator.getBattery()
   battery.addEventListener('dischargingtimechange', callback)
   battery.addEventListener('levelchange', callback)
+  callback()
   return () => {
     battery.removeEventListener('dischargingtimechange', callback)
     battery.removeEventListener('levelchange', callback)
@@ -55,59 +56,76 @@ async function onBatteryChange (callback) {
 }
 
 
-async function drawBatteryLevel (e) {
+async function drawBatteryLevel (event) {
 
-  if (e)
-    console.info("Battery change event", e)
+  if (event)
+    console.info("Battery change event", event)
+
+  const conf = config.getConfig()
+
+
 
   let state
-  let level       = await getBatteryLevel()
-  let time        = getBatteryTime()
-  let timeLabel   = getBatteryChargingLabel()
-  let timeContent = '<time>' + await time + await timeLabel + '</time>'
+  const promises = [
+    getBatteryLevel(),
+    getBatteryTime(),
+    getBatteryChargingLabel(),
+  ]
 
-  for (let lvl in states) {
+  const [ level, time, timeLabel ] = await Promise.all(promises)
+
+  for (let lvl in states)
     if (parseInt(level) >= lvl)
       state = states[lvl]
-  }
 
-  progress.max    = parseInt(100)
-  progress.value  = parseFloat(level)
-  label.innerHTML = level.toPrecision(3) + '%' + timeContent
+  elements.progress.max     = parseInt(100)
+  elements.progress.value   = parseFloat(level)
+  elements.label.innerHTML  = `<span class='level'>${level.toPrecision(3)}%</span><time>${time}${timeLabel}</time>`
 
-  label.setAttribute('class', 'battery-level')
-  progress.setAttribute('class', 'battery-bar ' + state)
-  document.body.appendChild(container)
+  elements.label.classList.add('battery-level', 'updated')
+  elements.progress.classList.add('battery-bar', state)
+  elements.container.classList.add('power-bar-container')
+  elements.container.classList.toggle('hidden', conf.showBatteryBar === false)
+  setTimeout(() => elements.label.classList.remove('updated'), 50)
+  document.body.appendChild(elements.container)
 }
 
 
 function applyCSS (filename, variables={}) {
   const css       = document.createElement('style')
   const outputVar = name => '--' + name + ': ' + variables[name] + ';\n'
-  let vars        = Object.keys(variables).reduce((stream, name) => stream + outputVar(name), '')
+  const vars      = Object.keys(variables).reduce((stream, name) => stream + outputVar(name), '')
 
-  container.querySelector('style[name="' + filename + '"]')
+  elements.container.querySelector('style[name="' + filename + '"]')
   css.setAttribute('name', filename)
   css.innerHTML = readFileSync(resolve(__dirname, filename), 'utf8') + `
     ${readFileSync(resolve(__dirname, filename), 'utf8')}
     :root {${vars}}`
-  container.appendChild(css)
+  elements.container.appendChild(css)
 }
 
 
 function decorateHyper (host) {
-  container = document.createElement('aside')
-  progress  = document.createElement('progress')
-  label     = document.createElement('label')
-  container.appendChild(label)
-  container.appendChild(progress)
-  drawBatteryLevel()
+  elements.container = document.createElement('aside')
+  elements.progress  = document.createElement('progress')
+  elements.label     = document.createElement('label')
+  elements.container.appendChild(elements.label)
+  elements.container.appendChild(elements.progress)
+
   applyCSS('style.css', vars)
-  onBatteryChange(drawBatteryLevel)
+  observeBatteryChange(drawBatteryLevel)
+
+  console.log("config now:", config.getConfig())
   return host
+}
+
+function decorateConfig (config) {
+  console.log(config)
+  return { ...config }
 }
 
 
 module.exports = {
-  decorateHyper
+  decorateHyper,
+  decorateConfig,
 }
