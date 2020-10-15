@@ -66,7 +66,7 @@ progress.battery-bar {
 progress::-webkit-progress-bar {
   background-color: transparent !important; }
 
-progress::-webkit-progress-value {
+.progress div {
   mix-blend-mode: screen;
   opacity:        1 }
 

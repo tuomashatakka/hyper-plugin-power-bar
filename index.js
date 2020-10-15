@@ -22,6 +22,37 @@ let vars = {
 }
 
 
+let estimate  = {
+  last:      new Date(),
+  history:   [],
+  calculate: () => {
+    let avg = estimate.history
+      .reduce((result, current) => result + current, 0)
+      / estimate.history.length
+    let delta = new Date().getTime() - estimate.last
+    return delta / avg
+  },
+  add: () => {
+    estimate.history.push(new Date().getTime())
+    estimate.last = new Date()
+  }
+}
+
+
+function createElements () {
+  let value = document.createElement('div')
+  container = document.createElement('aside')
+  progress  = document.createElement('div')
+  label     = document.createElement('label')
+
+  label.setAttribute('class', 'battery-level')
+  progress.appendChild(value)
+  container.appendChild(label)
+  container.appendChild(progress)
+  document.body.appendChild(container)
+}
+
+
 async function getBatteryLevel () {
   const { level } = await navigator.getBattery()
   return 100 * level
