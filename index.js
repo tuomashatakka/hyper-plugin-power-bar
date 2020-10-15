@@ -1,3 +1,4 @@
+/* global config */
 const { resolve } = require('path')
 const { readFileSync } = require('fs')
 
@@ -25,13 +26,15 @@ let vars = {
 let estimate  = {
   last:      new Date(),
   history:   [],
+
   calculate: () => {
-    let avg = estimate.history
+    let avg = estimate.history // eslint-disable-line block-padding/functions
       .reduce((result, current) => result + current, 0)
       / estimate.history.length
     let delta = new Date().getTime() - estimate.last
     return delta / avg
   },
+
   add: () => {
     estimate.history.push(new Date().getTime())
     estimate.last = new Date()
@@ -39,17 +42,13 @@ let estimate  = {
 }
 
 
-function createElements () {
-  let value = document.createElement('div')
-  container = document.createElement('aside')
-  progress  = document.createElement('div')
-  label     = document.createElement('label')
-
-  label.setAttribute('class', 'battery-level')
-  progress.appendChild(value)
-  container.appendChild(label)
-  container.appendChild(progress)
-  document.body.appendChild(container)
+function createElements (root) {
+  elements.container = document.createElement('aside')
+  elements.progress  = document.createElement('progress')
+  elements.label     = document.createElement('label')
+  elements.container.appendChild(elements.label)
+  elements.container.appendChild(elements.progress)
+  return root.appendChild(elements.container)
 }
 
 
@@ -67,7 +66,7 @@ async function getBatteryChargingLabel () {
 
 async function getBatteryTime () {
   const { charging, chargingTime, dischargingTime } = await navigator.getBattery()
-  let time = (charging ? chargingTime : dischargingTime)
+  let time = charging ? chargingTime : dischargingTime
   let n = 0
   while (time > factor[n])
     time = time / factor[n++]
@@ -80,6 +79,7 @@ async function observeBatteryChange (callback) {
   battery.addEventListener('dischargingtimechange', callback)
   battery.addEventListener('levelchange', callback)
   callback()
+
   return () => {
     battery.removeEventListener('dischargingtimechange', callback)
     battery.removeEventListener('levelchange', callback)
@@ -87,10 +87,10 @@ async function observeBatteryChange (callback) {
 }
 
 
-async function drawBatteryLevel (event) {
+async function drawBatteryLevel (event) { // eslint-disable-line max-statements
 
   if (event)
-    console.info("Battery change event", event)
+    console.debug("Battery change event", event)// eslint-disable-line no-console
 
   const conf = config.getConfig()
 
@@ -117,46 +117,81 @@ async function drawBatteryLevel (event) {
   elements.progress.classList.add('battery-bar', state)
   elements.container.classList.add('power-bar-container')
   elements.container.classList.toggle('hidden', conf.showBatteryBar === false)
+
   setTimeout(() => elements.label.classList.remove('updated'), 50)
-  document.body.appendChild(elements.container)
 }
 
 
 function applyCSS (filename, variables={}) {
-  const css       = document.createElement('style')
-  const outputVar = name => '--' + name + ': ' + variables[name] + ';\n'
-  const vars      = Object.keys(variables).reduce((stream, name) => stream + outputVar(name), '')
+  const css       = elements.container.querySelector('style[name="' + filename + '"]') || document.createElement('style')
 
-  elements.container.querySelector('style[name="' + filename + '"]')
+  const outputVar = name =>
+    `--${name}: ${variables[name]};\n`
+
+  const reducer   = (stream, name) =>
+    stream + outputVar(name)
+
+  const vars      = Object
+    .keys(variables)
+    .reduce(reducer, '')
+
+
   css.setAttribute('name', filename)
-  css.innerHTML = readFileSync(resolve(__dirname, filename), 'utf8') + `
-    ${readFileSync(resolve(__dirname, filename), 'utf8')}
-    :root {${vars}}`
-  elements.container.appendChild(css)
+  css.innerHTML = readFileSync(resolve(__dirname, filename), 'utf8') +
+    `${readFileSync(resolve(__dirname, filename), 'utf8')}\n:root {${vars}}`
+  return elements.container.appendChild(css)
 }
 
 
-function decorateHyper (host) {
-  elements.container = document.createElement('aside')
-  elements.progress  = document.createElement('progress')
-  elements.label     = document.createElement('label')
-  elements.container.appendChild(elements.label)
-  elements.container.appendChild(elements.progress)
+function decorateHyper (Host, { React }) {
+  return class PowerBarWrapper extends React.Component {
 
-  applyCSS('style.css', vars)
-  observeBatteryChange(drawBatteryLevel)
+    onRef (element) {
+      if (!this.element)
+        this.element = this.props.createElements(element)
+    }
 
-  console.log("config now:", config.getConfig())
-  return host
+    componentDidMount () {
+      this.styleNode = applyCSS('style.css', vars)
+      this.unsubscribe = this.props.observeBatteryChange(drawBatteryLevel)
+    }
+
+    componentWillUnmount () {
+      this.unsubscribe()
+      if (this.styleNode)
+        this.styleNode.remove()
+      if (this.element)
+        this.element.remove()
+    }
+
+    render () {
+
+      const handleReference = ref => ref && this.onRef(ref)
+      const renderedElement = React.createElement(
+        'div',
+        { ref: handleReference },
+        React.createElement(Host, { ...this.props }))
+
+      return renderedElement
+    }
+  }
 }
 
 function decorateConfig (config) {
-  console.log(config)
   return { ...config }
+}
+
+function mapHyperState (storeContent, map) {
+  return {
+    ...map,
+    createElements,
+    observeBatteryChange,
+  }
 }
 
 
 module.exports = {
   decorateHyper,
   decorateConfig,
+  mapHyperState,
 }

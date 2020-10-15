@@ -1,7 +1,7 @@
 :root {
   --height:         3px;
-  --start-color:    #1c5ab6;
-  --middle-color:   #e82967;
+  --start-color:    #e82967;
+  --middle-color:   #988b8f;
   --end-color:      #3e3b45;
   --state-full:     #24d694;
   --state-charged:  #1c5ab6;
@@ -64,11 +64,9 @@ progress.battery-bar {
 }
 
 progress::-webkit-progress-bar {
+  opacity:          0.85;
+  mix-blend-mode:   screen;
   background-color: transparent !important; }
-
-.progress div {
-  mix-blend-mode: screen;
-  opacity:        1 }
 
 progress.full::-webkit-progress-value {
   background-color: var(--state-full) }
